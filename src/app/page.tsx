@@ -1,4 +1,7 @@
+import dbConnect from "@/lib/dbConnect";
 import Image from "next/image";
+
+dbConnect();
 
 export default function Home() {
   return (
