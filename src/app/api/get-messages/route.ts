@@ -16,11 +16,11 @@ export async function GET(request: Request) {
       { status: 401 }
     );
   }
-  const userId = new mongoose.Types.ObjectId(_user._id);  //while doing aggregation have to write this
+  const userId = new mongoose.Types.ObjectId(_user._id);
   try {
     const user = await UserModel.aggregate([
       { $match: { _id: userId } },
-      { $unwind: '$messages' },   //unwind is used to destructure the array
+      { $unwind: '$messages' },
       { $sort: { 'messages.createdAt': -1 } },
       { $group: { _id: '$_id', messages: { $push: '$messages' } } },
     ]).exec();

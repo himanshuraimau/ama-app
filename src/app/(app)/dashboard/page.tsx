@@ -84,13 +84,16 @@ function UserDashboard() {
     [setIsLoading, setMessages, toast]
   );
 
+  // Fetch initial state from the server
   useEffect(() => {
     if (!session || !session.user) return;
 
     fetchMessages();
+
     fetchAcceptMessages();
   }, [session, setValue, toast, fetchAcceptMessages, fetchMessages]);
 
+  // Handle switch change
   const handleSwitchChange = async () => {
     try {
       const response = await axios.post<ApiResponse>('/api/accept-messages', {
@@ -176,7 +179,7 @@ function UserDashboard() {
       </Button>
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         {messages.length > 0 ? (
-          messages.map((message) => (
+          messages.map((message, index) => (
             <MessageCard
               key={message._id}
               message={message}
