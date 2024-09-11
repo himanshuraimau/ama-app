@@ -170,7 +170,7 @@ export default function SendMessage() {
           <CardHeader>
             <h3 className="text-xl font-semibold text-gray-800">Suggested Messages</h3>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-1 gap-4">
             {error ? (
               <p className="text-red-500 col-span-full">{error.message}</p>
             ) : (
@@ -178,7 +178,7 @@ export default function SendMessage() {
                 <Button
                   key={index}
                   variant="outline"
-                  className="text-left h-auto py-2 px-4 border border-gray-300 hover:border-blue-500 hover:bg-blue-50"
+                  className="text-left h-auto py-2 px-4 border border-gray-300 hover:border-blue-500 hover:bg-blue-50 whitespace-normal break-words"
                   onClick={() => handleMessageClick(message)}
                 >
                   {message}
