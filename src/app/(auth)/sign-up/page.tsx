@@ -1,13 +1,9 @@
-'use client';
-
+import React, { useState, useEffect } from 'react';
 import { ApiResponse } from '@/types/ApiResponse';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useDebounce } from "@uidotdev/usehooks";
 import * as z from 'zod';
-import {useDebounceCallback} from "usehooks-ts";
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -23,15 +19,52 @@ import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { signUpSchema } from '@/schemas/signUpSchema';
 
-export default function SignUpForm() {
-  const [username, setUsername] = useState('');
+// Custom hook for debounced username checking
+const useUsernameCheck = (initialUsername: string) => {
+  const [username, setUsername] = useState(initialUsername);
   const [usernameMessage, setUsernameMessage] = useState('');
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const debounced = useDebounceCallback(setUsername, 300);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (username) {
+        checkUsernameUnique(username);
+      } else {
+        setUsernameMessage('');
+        setIsCheckingUsername(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [username]);
+
+  const checkUsernameUnique = async (value: string) => {
+    setIsCheckingUsername(true);
+    setUsernameMessage('');
+    try {
+      const response = await axios.get<ApiResponse>(
+        `/api/check-username-unique?username=${value}`
+      );
+      setUsernameMessage(response.data.message);
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse>;
+      setUsernameMessage(
+        axiosError.response?.data.message ?? 'Error checking username'
+      );
+    } finally {
+      setIsCheckingUsername(false);
+    }
+  };
+
+  return { username, setUsername, usernameMessage, isCheckingUsername };
+};
+
+export default function SignUpForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+
+  const { username, setUsername, usernameMessage, isCheckingUsername } = useUsernameCheck('');
 
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
@@ -42,30 +75,16 @@ export default function SignUpForm() {
     },
   });
 
-  useEffect(() => {
-    const checkUsernameUnique = async () => {
-      if (username) {
-        setIsCheckingUsername(true);
-        setUsernameMessage(''); // Reset message
-        try {
-          const response = await axios.get<ApiResponse>(
-            `/api/check-username-unique?username=${username}`
-          );
-          setUsernameMessage(response.data.message);
-        } catch (error) {
-          const axiosError = error as AxiosError<ApiResponse>;
-          setUsernameMessage(
-            axiosError.response?.data.message ?? 'Error checking username'
-          );
-        } finally {
-          setIsCheckingUsername(false);
-        }
-      }
-    };
-    checkUsernameUnique();
-  }, [username]);
-
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
+    if (isCheckingUsername || usernameMessage !== 'Username is unique') {
+      toast({
+        title: 'Error',
+        description: 'Please wait for username validation or choose a unique username.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const response = await axios.post<ApiResponse>('/api/sign-up', data);
@@ -76,23 +95,18 @@ export default function SignUpForm() {
       });
 
       router.replace(`/verify/${username}`);
-
-      setIsSubmitting(false);
     } catch (error) {
       console.error('Error during sign-up:', error);
 
       const axiosError = error as AxiosError<ApiResponse>;
-
-      // Default error message
-      let errorMessage = axiosError.response?.data.message;
-      ('There was a problem with your sign-up. Please try again.');
+      const errorMessage = axiosError.response?.data.message ?? 'There was a problem with your sign-up. Please try again.';
 
       toast({
         title: 'Sign Up Failed',
         description: errorMessage,
         variant: 'destructive',
       });
-
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -118,7 +132,7 @@ export default function SignUpForm() {
                     {...field}
                     onChange={(e) => {
                       field.onChange(e);
-                      debounced(e.target.value);
+                      setUsername(e.target.value);
                     }}
                   />
                   {isCheckingUsername && <Loader2 className="animate-spin" />}
@@ -149,7 +163,6 @@ export default function SignUpForm() {
                 </FormItem>
               )}
             />
-
             <FormField
               name="password"
               control={form.control}
@@ -161,7 +174,11 @@ export default function SignUpForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className='w-full' disabled={isSubmitting}>
+            <Button 
+              type="submit" 
+              className='w-full' 
+              disabled={isSubmitting || isCheckingUsername || usernameMessage !== 'Username is unique'}
+            >
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
