@@ -102,7 +102,7 @@ export default function VerifyAccount() {
             <CheckCircle className="h-4 w-4" />
             <AlertTitle>Almost there!</AlertTitle>
             <AlertDescription>
-              We've sent a verification code to the email associated with @{params.username}.
+              We`&apos`ve sent a verification code to the email associated with @{params.username}.
             </AlertDescription>
           </Alert>
           <Form {...form}>
@@ -139,7 +139,7 @@ export default function VerifyAccount() {
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-sm text-muted-foreground text-center">
-            Didn't receive the code?
+            Didn`&apos`t receive the code?
           </div>
           <Button 
             variant="outline" 

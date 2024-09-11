@@ -179,7 +179,7 @@ export default function SignUpForm() {
                         <Input className="pl-8" placeholder="Enter your email" {...field} />
                       </div>
                     </FormControl>
-                    <p className='text-sm text-muted-foreground'>We'll send you a verification code</p>
+                    <p className='text-sm text-muted-foreground'>We`&apos`ll send you a verification code</p>
                     <FormMessage />
                   </FormItem>
                 )}
