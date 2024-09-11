@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { ApiResponse } from '@/types/ApiResponse';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -99,7 +100,7 @@ export default function SignUpForm() {
       console.error('Error during sign-up:', error);
 
       const axiosError = error as AxiosError<ApiResponse>;
-      const errorMessage = axiosError.response?.data.message ?? 'There was a problem with your sign-up. Please try again.';
+      const errorMessage = axiosError.response?.data.message || 'There was a problem with your sign-up. Please try again.';
 
       toast({
         title: 'Sign Up Failed',
