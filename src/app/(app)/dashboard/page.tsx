@@ -33,6 +33,11 @@ function UserDashboard() {
 
   const { data: session } = useSession();
 
+
+const handleDeleteMessage = (messageId: string) => {
+  setMessages(messages.filter((message) => message._id !== messageId))
+}
+
   const form = useForm({
     resolver: zodResolver(acceptMessageSchema),
   });
@@ -234,3 +239,5 @@ function UserDashboard() {
 }
 
 export default UserDashboard;
+
+
